@@ -16,8 +16,8 @@ type OperandSet interface {
 }
 
 type Pair interface {
-	K() Operand
-	V() Operand
+	First() Operand
+	Second() Operand
 }
 
 type Iterator interface {

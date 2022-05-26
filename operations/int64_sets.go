@@ -8,8 +8,8 @@ package operations
 type Int64Operand int64
 
 type Int64Pair struct {
-	Start int64
-	End   int64
+	Start int64 `pair:"first"`
+	End   int64 `pair:"second"`
 }
 
 type Int64Set []Int64Pair
@@ -23,11 +23,11 @@ func MakeInt64OperandSet(size ...int) OperandSet {
 	return nil
 }
 
-func (p Int64Pair) K() Operand {
+func (p Int64Pair) First() Operand {
 	return Int64Operand(p.Start)
 }
 
-func (p Int64Pair) V() Operand {
+func (p Int64Pair) Second() Operand {
 	return Int64Operand(p.End)
 }
 

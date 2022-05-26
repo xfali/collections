@@ -23,7 +23,7 @@ func TestInt64Union(t *testing.T) {
 		for _, v := range arr {
 			x := it.Next()
 			t.Log(x)
-			if v.K().NE(x.K()) || v.V().NE(x.V()) {
+			if v.First().NE(x.First()) || v.Second().NE(x.Second()) {
 				t.Fatal("Value not match")
 			}
 		}
@@ -41,7 +41,7 @@ func TestInt64Union(t *testing.T) {
 		for _, v := range arr {
 			x := it.Next()
 			t.Log(x)
-			if v.K().NE(x.K()) || v.V().NE(x.V()) {
+			if v.First().NE(x.First()) || v.Second().NE(x.Second()) {
 				t.Fatal("Value not match")
 			}
 		}

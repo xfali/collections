@@ -10,13 +10,13 @@ func DifferenceOperandSets(newFunc NewOperandSetFunc, src, dst OperandSet) Opera
 	it := dst.Iterator()
 	for it.HasNext() {
 		v := it.Next()
-		retMap[v.K()] = v.V()
+		retMap[v.First()] = v.Second()
 	}
 	it = src.Iterator()
 	for it.HasNext() {
 		v := it.Next()
-		st := v.K()
-		ed := v.V()
+		st := v.First()
+		ed := v.Second()
 
 		for s, e := range retMap {
 			if st.LT(s) && ed.GE(s) && ed.LT(e) {

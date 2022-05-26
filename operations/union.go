@@ -15,8 +15,8 @@ func UnionOperandSets(newFunc NewOperandSetFunc, sets ...OperandSet) OperandSet 
 	it := all.Iterator()
 	for it.HasNext() {
 		v := it.Next()
-		st := v.K()
-		ed := v.V()
+		st := v.First()
+		ed := v.Second()
 
 		if len(retMap) == 0 {
 			retMap[st] = ed
