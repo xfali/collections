@@ -5,7 +5,7 @@
 
 package operations
 
-type NewOperandSetFunc func(size int) OperandSet
+type NewOperandSetFunc func(size ...int) OperandSet
 
 func MergeOperands(newFunc NewOperandSetFunc, sort bool, datas ...OperandSet) OperandSet {
 	if len(datas) == 0 {
@@ -21,7 +21,7 @@ func MergeOperands(newFunc NewOperandSetFunc, sort bool, datas ...OperandSet) Op
 	all := newFunc(size)
 	size = 0
 	for _, v := range datas {
-		all.Copy(v, size)
+		all = all.Copy(v, size)
 		size += v.Len()
 	}
 	if !sort {

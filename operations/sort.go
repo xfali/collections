@@ -7,18 +7,6 @@ package operations
 
 import "sort"
 
-//func (s SortedOperands) Len() int {
-//	return len(s)
-//}
-//
-//func (s SortedOperands) Less(i, j int) bool {
-//	return s[i].LT(s[j])
-//}
-//
-//func (s SortedOperands) Swap(i, j int) {
-//	s[i], s[j] = s[j], s[i]
-//}
-
 func SortOperands(v OperandSet) OperandSet {
 	sort.Sort(v)
 	return v

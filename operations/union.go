@@ -44,7 +44,7 @@ func UnionOperandSets(newFunc NewOperandSetFunc, sets ...OperandSet) OperandSet 
 			}
 		}
 	}
-	ret := newFunc(len(retMap))
+	ret := newFunc(0, len(retMap))
 	for k, v := range retMap {
 		ret = ret.Append(k, v)
 	}

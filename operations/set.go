@@ -10,7 +10,7 @@ import "sort"
 type OperandSet interface {
 	sort.Interface
 
-	Copy(set OperandSet, offset int)
+	Copy(set OperandSet, offset int) OperandSet
 	Append(k, v Operand) OperandSet
 	Iterator() Iterator
 }

@@ -22,7 +22,7 @@ func DifferenceOperandSets(newFunc NewOperandSetFunc, src, dst OperandSet) Opera
 			if st.LT(s) && ed.GE(s) && ed.LT(e) {
 				// 起点早于区间，终点属于区间
 				delete(retMap, s)
-				ed.SelfIncreasing()
+				ed := ed.SelfIncreasing()
 				retMap[ed] = e
 			} else if st.LE(s) && ed.GE(e) {
 				// 起点早于区间，终点晚于区间
@@ -30,7 +30,7 @@ func DifferenceOperandSets(newFunc NewOperandSetFunc, src, dst OperandSet) Opera
 			} else if ed.GE(e) && st.GE(s) && st.LE(e) {
 				// 起点属于区间，终点晚于区间
 				delete(retMap, s)
-				st.SelfDecreasing()
+				st := st.SelfDecreasing()
 				retMap[s] = st
 			} else if ed.LT(s) || st.GT(e) {
 				// 无重合区间
@@ -39,7 +39,7 @@ func DifferenceOperandSets(newFunc NewOperandSetFunc, src, dst OperandSet) Opera
 			}
 		}
 	}
-	ret := newFunc(len(retMap))
+	ret := newFunc(0, len(retMap))
 	for k, v := range retMap {
 		ret = ret.Append(k, v)
 	}

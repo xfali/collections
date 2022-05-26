@@ -29,14 +29,6 @@ type EqualOperator interface {
 	EQ(other Operand) bool
 }
 
-type IncrDecrOperator interface {
-	// Increase 1 step
-	SelfIncreasing()
-
-	// Decrease 1 step
-	SelfDecreasing()
-}
-
 type Operand interface {
 	GreaterOperator
 
@@ -44,5 +36,9 @@ type Operand interface {
 
 	EqualOperator
 
-	IncrDecrOperator
+	// Increase 1 step
+	SelfIncreasing() Operand
+
+	// Decrease 1 step
+	SelfDecreasing() Operand
 }
