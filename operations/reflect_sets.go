@@ -38,25 +38,54 @@ type reflectSet struct {
 	secondIndex int
 }
 
-func DifferenceSets(compareFn, sumFunc, src, dst interface{}) OperandSet {
-	s1 := NewReflectSet(src, compareFn, sumFunc)
-	s2 := NewReflectSet(dst, compareFn, sumFunc)
+// 通用计算数组差集方法
+// compareFunc 类型比较函数，类型为func(a, b Type) int，当a大于b返回正数，a小于b返回负数，全等返回0，如func(a, b int) { return a - b }
+// sumFunc 用于偏移数据，类型为func(a Type, steps int) Type, a为原始数据，steps为偏移步数，正数为向后偏移的步数，负数为向前偏移的步数，返回偏移后的数据
+// src 原始数组，类型为结构体数组，数据必须包含两个字段，这两个字段分别有tag pair:"first"和pair:"second"，且类型必须一致，与compareFunc、sumFunc函数参数中Type类型一致，如
+//   []struct{
+//     A int64 `pair:"first"`
+//     B int64 `pair:"second"`
+//   }
+// dst 目的计算与src差集的数组，类型和src一致
+// 返回差集
+func DifferenceSets(compareFunc, sumFunc, src, dst interface{}) OperandSet {
+	s1 := NewReflectSet(src, compareFunc, sumFunc)
+	s2 := NewReflectSet(dst, compareFunc, sumFunc)
 	return DifferenceOperandSets(s1.MakeNewOperandSetFunc(), s1, s2)
 
 }
 
-func DifferenceSetsResult(compareFn, sumFunc, src, dst interface{}) interface{} {
-	ret := DifferenceSets(compareFn, sumFunc, src, dst)
+// 通用计算数组差集方法
+// compareFunc 类型比较函数，类型为func(a, b Type) int，当a大于b返回正数，a小于b返回负数，全等返回0，如func(a, b int) { return a - b }
+// sumFunc 用于偏移数据，类型为func(a Type, steps int) Type, a为原始数据，steps为偏移步数，正数为向后偏移的步数，负数为向前偏移的步数，返回偏移后的数据
+// src 原始数组，类型为结构体数组，数据必须包含两个字段，这两个字段分别有tag pair:"first"和pair:"second"，且类型必须一致，与compareFunc、sumFunc函数参数中Type类型一致，如
+//   []struct{
+//     A int64 `pair:"first"`
+//     B int64 `pair:"second"`
+//   }
+// dst 目的计算与src差集的数组，类型和src一致
+// 返回差集的数组interface，实际类型与src、dst一致
+func DifferenceSetsResult(compareFunc, sumFunc, src, dst interface{}) interface{} {
+	ret := DifferenceSets(compareFunc, sumFunc, src, dst)
 	return ret.(*reflectSet).slice.Interface()
 }
 
-func UnionSets(compareFn, sumFunc interface{}, sets ...interface{}) OperandSet {
+// 通用计算数组并集方法
+// compareFunc 类型比较函数，类型为func(a, b Type) int，当a大于b返回正数，a小于b返回负数，全等返回0，如func(a, b int) { return a - b }
+// sumFunc 用于偏移数据，类型为func(a Type, steps int) Type, a为原始数据，steps为偏移步数，正数为向后偏移的步数，负数为向前偏移的步数，返回偏移后的数据
+// sets 计算并集的原始数组，不定参数类型为结构体数组，数据必须包含两个字段，这两个字段分别有tag pair:"first"和pair:"second"，且类型必须一致，与compareFunc、sumFunc函数参数中Type类型一致，如
+//   []struct{
+//     A int64 `pair:"first"`
+//     B int64 `pair:"second"`
+//   }
+// 返回并集
+func UnionSets(compareFunc, sumFunc interface{}, sets ...interface{}) OperandSet {
 	if len(sets) == 0 {
 		return nil
 	}
 	params := make([]OperandSet, len(sets))
 	for i := range sets {
-		params[i] = NewReflectSet(sets[i], compareFn, sumFunc)
+		params[i] = NewReflectSet(sets[i], compareFunc, sumFunc)
 	}
 	if len(sets) == 1 {
 		return params[0]
@@ -64,8 +93,17 @@ func UnionSets(compareFn, sumFunc interface{}, sets ...interface{}) OperandSet {
 	return UnionOperandSets(params[0].(*reflectSet).MakeNewOperandSetFunc(), params...)
 }
 
-func UnionSetsResult(compareFn, sumFunc interface{}, sets ...interface{}) interface{} {
-	ret := UnionSets(compareFn, sumFunc, sets...)
+// 通用计算数组并集方法
+// compareFunc 类型比较函数，类型为func(a, b Type) int，当a大于b返回正数，a小于b返回负数，全等返回0，如func(a, b int) { return a - b }
+// sumFunc 用于偏移数据，类型为func(a Type, steps int) Type, a为原始数据，steps为偏移步数，正数为向后偏移的步数，负数为向前偏移的步数，返回偏移后的数据
+// sets 计算并集的原始数组，不定参数类型为结构体数组，数据必须包含两个字段，这两个字段分别有tag pair:"first"和pair:"second"，且类型必须一致，与compareFunc、sumFunc函数参数中Type类型一致，如
+//   []struct{
+//     A int64 `pair:"first"`
+//     B int64 `pair:"second"`
+//   }
+// 返回并集的数组interface，实际类型与sets传入的数组类型一致
+func UnionSetsResult(compareFunc, sumFunc interface{}, sets ...interface{}) interface{} {
+	ret := UnionSets(compareFunc, sumFunc, sets...)
 	return ret.(*reflectSet).slice.Interface()
 }
 
