@@ -104,7 +104,7 @@ func (s *reflectSet) MakeNewOperandSetFunc() NewOperandSetFunc {
 				secondIndex: s.secondIndex,
 			}
 		} else if len(size) == 1 {
-			v := reflect.MakeSlice(s.slice.Type(), 0, size[1])
+			v := reflect.MakeSlice(s.slice.Type(), size[0], size[0])
 			return &reflectSet{
 				slice:       v,
 				compareFn:   s.compareFn,
@@ -311,7 +311,7 @@ func checkSumFunction(fn reflect.Value, elemType reflect.Type) bool {
 	if fn.Type().NumIn() != 2 || fn.Type().NumOut() != 1 {
 		return false
 	}
-	fmt.Println(elemType, fn.Type().In(0), fn.Type().In(1).Kind(), fn.Type().Out(0))
+	//fmt.Println(elemType, fn.Type().In(0), fn.Type().In(1).Kind(), fn.Type().Out(0))
 	if elemType != fn.Type().In(0) || reflect.Int != fn.Type().In(1).Kind() || elemType != fn.Type().Out(0) {
 		return false
 	}
