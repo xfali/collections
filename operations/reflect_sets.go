@@ -38,24 +38,34 @@ type reflectSet struct {
 	secondIndex int
 }
 
-func DifferenceSets(compareFn, sumFunc, src, dst interface{}) interface{} {
+func DifferenceSets(compareFn, sumFunc, src, dst interface{}) OperandSet {
 	s1 := NewReflectSet(src, compareFn, sumFunc)
 	s2 := NewReflectSet(dst, compareFn, sumFunc)
-	ret := DifferenceOperandSets(s1.MakeNewOperandSetFunc(), s1, s2)
+	return DifferenceOperandSets(s1.MakeNewOperandSetFunc(), s1, s2)
+
+}
+
+func DifferenceSetsResult(compareFn, sumFunc, src, dst interface{}) interface{} {
+	ret := DifferenceSets(compareFn, sumFunc, src, dst)
 	return ret.(*reflectSet).slice.Interface()
 }
 
-func UnionSets(compareFn, sumFunc interface{}, sets ...interface{}) interface{} {
+func UnionSets(compareFn, sumFunc interface{}, sets ...interface{}) OperandSet {
 	if len(sets) == 0 {
 		return nil
-	} else if len(sets) == 1 {
-		return sets[0]
 	}
 	params := make([]OperandSet, len(sets))
 	for i := range sets {
 		params[i] = NewReflectSet(sets[i], compareFn, sumFunc)
 	}
-	ret := UnionOperandSets(params[0].(*reflectSet).MakeNewOperandSetFunc(), params...)
+	if len(sets) == 1 {
+		return params[0]
+	}
+	return UnionOperandSets(params[0].(*reflectSet).MakeNewOperandSetFunc(), params...)
+}
+
+func UnionSetsResult(compareFn, sumFunc interface{}, sets ...interface{}) interface{} {
+	ret := UnionSets(compareFn, sumFunc, sets...)
 	return ret.(*reflectSet).slice.Interface()
 }
 
@@ -64,13 +74,13 @@ func NewReflectSet(slice, compareFn, sumFunc interface{}) *reflectSet {
 	v := reflect.ValueOf(slice)
 	checkSlice(t)
 	elemType := t.Elem()
-	fi, si := checkType(elemType)
+	fi, si, opType := checkType(elemType)
 	fn := reflect.ValueOf(compareFn)
-	if !checkCompareFunction(fn, elemType) {
+	if !checkCompareFunction(fn, opType) {
 		panic("Compare function Not match, expect func(a, b Type) int")
 	}
 	sumFn := reflect.ValueOf(sumFunc)
-	if !checkSumFunction(fn, elemType) {
+	if !checkSumFunction(sumFn, opType) {
 		panic("Sum function Not match, expect func(a Type, steps int) Type")
 	}
 	return &reflectSet{
@@ -129,8 +139,8 @@ func (s *reflectSet) Len() int {
 
 func (s *reflectSet) Less(i, j int) bool {
 	var param [2]reflect.Value
-	param[0] = s.slice.Index(i)
-	param[1] = s.slice.Index(j)
+	param[0] = s.slice.Index(i).Field(s.firstIndex)
+	param[1] = s.slice.Index(j).Field(s.firstIndex)
 	return s.compareFn.Call(param[:])[0].Int() < 0
 }
 
@@ -145,10 +155,10 @@ func (s *reflectSet) Copy(set OperandSet, offset int) OperandSet {
 
 func (s *reflectSet) Append(k, v Operand) OperandSet {
 	t := s.slice.Type().Elem()
-	elem := reflect.New(t)
+	elem := reflect.New(t).Elem()
 	elem.Field(s.firstIndex).Set(k.(*reflectOperand).field)
 	elem.Field(s.secondIndex).Set(v.(*reflectOperand).field)
-	s.slice = reflect.Append(s.slice, elem.Elem())
+	s.slice = reflect.Append(s.slice, elem)
 	return s
 }
 
@@ -252,23 +262,29 @@ func checkSlice(t reflect.Type) {
 	}
 }
 
-func checkType(t reflect.Type) (int, int) {
+func checkType(t reflect.Type) (int, int, reflect.Type) {
 	if t.Kind() != reflect.Struct {
 		panic(fmt.Sprintf("Type %t is not struct!", t))
 	}
 	s := t.NumField()
 	found1st := -1
 	found2nd := -1
+	var t1, t2 reflect.Type
 	for i := 0; i < s; i++ {
 		f := t.Field(i)
 		if v, ok := f.Tag.Lookup(reflectPairTag); ok {
 			if found1st == -1 && v == reflectPairTag1stValue {
 				found1st = i
+				t1 = f.Type
 			} else if found2nd == -1 && v == reflectPairTag2ndValue {
 				found2nd = i
+				t2 = f.Type
 			}
 			if found1st != -1 && found2nd != -1 {
-				return found1st, found2nd
+				if t1 != t2 {
+					panic("Struct's field with tag \"pair\" is different type. ")
+				}
+				return found1st, found2nd, t1
 			}
 		}
 	}
@@ -295,6 +311,7 @@ func checkSumFunction(fn reflect.Value, elemType reflect.Type) bool {
 	if fn.Type().NumIn() != 2 || fn.Type().NumOut() != 1 {
 		return false
 	}
+	fmt.Println(elemType, fn.Type().In(0), fn.Type().In(1).Kind(), fn.Type().Out(0))
 	if elemType != fn.Type().In(0) || reflect.Int != fn.Type().In(1).Kind() || elemType != fn.Type().Out(0) {
 		return false
 	}
